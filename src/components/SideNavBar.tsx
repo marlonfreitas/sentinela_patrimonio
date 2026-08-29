@@ -2,6 +2,7 @@ import React from 'react';
 import { useData } from '../context/DataContext';
 
 import logoCaoma from '../assets/logo_caoma_MPE.png';
+import logoSentinela from '../assets/logo_sentinela_Tocantins_fundo.png';
 
 interface SideNavBarProps {
   activeTab: string;
@@ -45,16 +46,12 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({ activeTab, setActiveTab,
           }`}
       >
         {/* Brand Header */}
-        <div className="flex items-center gap-3 px-4 mb-8">
-          <div className="w-12 h-12 rounded overflow-hidden flex items-center justify-center shrink-0">
-            <img src={logoCaoma} alt="Logo CAOMA" className="w-full h-full object-contain" />
-          </div>
-          <div>
-            <h1 className="font-display-lg text-sm font-bold text-primary leading-tight">Sentinela do Patrimônio</h1>
-            <p className="font-label-caps text-[9px] text-on-surface-variant tracking-widest uppercase mt-0.5">
-              CAOMA / MPTO
-            </p>
-          </div>
+        <div className="flex flex-col items-center justify-center px-2 mb-6 border-b border-border-subtle/30 pb-4">
+          <img
+            src={logoSentinela}
+            alt="Sentinela do Patrimônio"
+            className="w-full max-w-[220px] h-auto object-contain hover:scale-[1.02] transition-all duration-255"
+          />
         </div>
 
         {/* Main Navigation Links */}
@@ -165,10 +162,19 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({ activeTab, setActiveTab,
               className="w-9 h-9 rounded-full object-cover border border-border-subtle"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwgHpQEkKoyv_xa6GUupkLHp4L6jbzICsYOfCTOmP6Qs6OB63P1T0ETg89l29PX8R9vF-IBd_wny5Xf_FARG-B77KTS7LXwHLKh5GUs50XNCuiEO4MIjY3WS5VirGJzTuHprojybAE12QKCfTYwzIXPXD8BLbvTTYqIri6wAZIHQwPw63sleM07cDadg-sbuPQwGGJJ5Qh1_fpJvvzlD1Dh6ZLGaQH8rOyg_4g1bbDqjOCMHbMQtrGbA"
             />
-            <div className="truncate">
+            <div className="truncate flex-1">
               <div className="font-bold text-on-surface text-body-sm truncate">Dr. Eduardo Silva</div>
               <div className="text-on-surface-variant text-[11px] truncate">Administrador</div>
             </div>
+          </div>
+
+          {/* Logo CAOMA MPE no Canto Inferior */}
+          <div className="flex justify-center items-center pt-3 border-t border-border-subtle/30 mt-2">
+            <img
+              src={logoCaoma}
+              alt="Logo CAOMA MPE"
+              className="h-10 w-auto object-contain opacity-75 hover:opacity-100 transition-opacity duration-200"
+            />
           </div>
         </div>
       </aside>

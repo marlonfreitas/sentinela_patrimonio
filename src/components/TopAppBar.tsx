@@ -1,6 +1,6 @@
 import React from 'react';
 import { useData } from '../context/DataContext';
-import logoCaoma from '../assets/logo_caoma_MPE.png';
+import logoSentinela from '../assets/logo_sentinela_Tocantins_fundo.png';
 
 interface TopAppBarProps {
   sidebarOpen: boolean;
@@ -29,7 +29,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
         >
           <span className="material-symbols-outlined text-[24px]">menu</span>
         </button>
-        <img src={logoCaoma} alt="CAOMA" className="h-8 w-auto object-contain hidden md:block" />
+        <img src={logoSentinela} alt="Sentinela do Patrimônio" className="h-11 w-auto object-contain hidden md:block hover:scale-105 transition-transform duration-200" />
         <h2 className="font-headline-md text-headline-md font-bold text-primary truncate max-w-[200px] sm:max-w-none">
           Sentinela do Patrimônio
         </h2>

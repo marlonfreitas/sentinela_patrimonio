@@ -99,6 +99,20 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <p className="font-semibold text-primary mt-1">Ministério Público do Estado do Tocantins</p>
         </div>
       </div>
+
+      {/* Logo CAOMA MPE no Canto Inferior Direito da Tela */}
+      <div className="absolute bottom-6 right-6 z-10 flex items-center gap-2.5 bg-white/10 hover:bg-white/15 backdrop-blur-md py-2 px-4 rounded-xl border border-white/10 shadow-lg transition-all duration-300">
+        <div className="text-right">
+          <span className="block text-[8px] font-bold text-white/50 uppercase tracking-widest leading-none">Realização</span>
+          <span className="block text-[10px] font-bold text-white uppercase tracking-wider mt-0.5">CAOMA / MPTO</span>
+        </div>
+        <div className="h-6 w-px bg-white/20"></div>
+        <img
+          src="/logo_caoma_MPE.png"
+          alt="Logo CAOMA MPE"
+          className="h-8 w-auto object-contain"
+        />
+      </div>
     </div>
   );
 };
