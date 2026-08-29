@@ -5,8 +5,8 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('teste@mpto.mp.br');
+  const [password, setPassword] = useState('Sentinela2026!');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
