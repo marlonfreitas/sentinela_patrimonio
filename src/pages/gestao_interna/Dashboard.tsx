@@ -126,7 +126,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         return {
           id: o.referralCaseNumber || `DOS-${o.id}`,
           bem: o.assetName,
-          orgao: destLabels[o.referralDest] || 'Órgão Externo',
+          orgao: (o.referralDest ? destLabels[o.referralDest] : 'Órgão Externo') || 'Órgão Externo',
           status: o.status === 'resolved' ? 'Homologado' : 'Em Trâmite',
           data: new Date(o.date).toLocaleDateString('pt-BR'),
           retornoCidadao: o.referralNotes ? (o.referralNotes.length > 25 ? o.referralNotes.substring(0, 25) + '...' : o.referralNotes) : 'Enviado'
