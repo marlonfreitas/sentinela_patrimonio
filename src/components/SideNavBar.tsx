@@ -11,7 +11,7 @@ interface SideNavBarProps {
   onLogout?: () => void;
 }
 
-export const SideNavBar: React.FC<SideNavBarProps> = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => {
+export const SideNavBar: React.FC<SideNavBarProps> = ({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout }) => {
   const { triageItems } = useData();
 
   // Contar denúncias pendentes de triagem
