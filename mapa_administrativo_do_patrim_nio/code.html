@@ -1,0 +1,429 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Mapa Administrativo - Sentinela do Patrimônio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&amp;family=Source+Serif+4:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#064e3b",
+                        "background": "#f8f9ff",
+                        "secondary-container": "#fb7b54",
+                        "surface": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#9badff",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#842503",
+                        "inverse-primary": "#95d3ba",
+                        "secondary-fixed": "#ffdbd1",
+                        "primary-fixed": "#b0f0d6",
+                        "surface-bright": "#f8f9ff",
+                        "on-surface-variant": "#404944",
+                        "on-primary-fixed": "#002117",
+                        "inverse-surface": "#213145",
+                        "heritage-green-deep": "#064E3B",
+                        "surface-container-highest": "#d3e4fe",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary": "#00237e",
+                        "on-secondary-container": "#6b1a00",
+                        "on-surface": "#0b1c30",
+                        "status-critical": "#B91C1C",
+                        "surface-container-lowest": "#ffffff",
+                        "heritage-green-leaf": "#166534",
+                        "on-tertiary-fixed-variant": "#173bab",
+                        "primary-fixed-dim": "#95d3ba",
+                        "status-stable": "#059669",
+                        "surface-gray": "#F8FAFC",
+                        "surface-tint": "#2b6954",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#3a0a00",
+                        "status-warning": "#D97706",
+                        "surface-dim": "#cbdbf5",
+                        "on-tertiary-fixed": "#001453",
+                        "material-ochre": "#B45309",
+                        "primary": "#003527",
+                        "surface-variant": "#d3e4fe",
+                        "outline-variant": "#bfc9c3",
+                        "secondary-fixed-dim": "#ffb59f",
+                        "on-primary-container": "#80bea6",
+                        "outline": "#707974",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "surface-container-high": "#dce9ff",
+                        "material-terracotta": "#9A3412",
+                        "on-background": "#0b1c30",
+                        "institutional-blue": "#1E40AF",
+                        "border-subtle": "#E2E8F0",
+                        "tertiary-fixed-dim": "#b8c4ff",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#1238a8",
+                        "secondary": "#a53c19",
+                        "surface-container-low": "#eff4ff",
+                        "tertiary-fixed": "#dde1ff",
+                        "surface-container": "#e5eeff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "container-max": "1440px",
+                        "margin-desktop": "48px",
+                        "stack-sm": "4px",
+                        "stack-lg": "24px",
+                        "stack-md": "12px",
+                        "base": "8px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "label-bold": ["Public Sans"],
+                        "body-md": ["Public Sans"],
+                        "body-sm": ["Public Sans"],
+                        "headline-md": ["\"Source Serif 4\""],
+                        "body-lg": ["Public Sans"],
+                        "label-caps": ["Public Sans"],
+                        "display-lg": ["\"Source Serif 4\""],
+                        "headline-lg": ["\"Source Serif 4\""],
+                        "headline-lg-mobile": ["\"Source Serif 4\""]
+                    },
+                    "fontSize": {
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Base styles */
+        body { @apply bg-background text-on-surface font-body-md; }
+        
+        /* Utility classes for typography matching */
+        .font-label-bold { font-family: 'Public Sans', sans-serif; font-weight: 700; font-size: 12px; line-height: 16px; letter-spacing: 0.05em; }
+        .text-label-bold { font-size: 12px; line-height: 16px; letter-spacing: 0.05em; font-weight: 700; }
+        
+        .font-headline-md { font-family: 'Source Serif 4', serif; font-weight: 600; font-size: 24px; line-height: 32px; }
+        .text-headline-md { font-size: 24px; line-height: 32px; font-weight: 600; }
+        
+        .font-headline-lg { font-family: 'Source Serif 4', serif; font-weight: 600; font-size: 32px; line-height: 40px; }
+        .text-headline-lg { font-size: 32px; line-height: 40px; font-weight: 600; }
+        
+        .font-label-caps { font-family: 'Public Sans', sans-serif; font-weight: 600; font-size: 11px; line-height: 16px; letter-spacing: 0.1em; text-transform: uppercase; }
+        .text-label-caps { font-size: 11px; line-height: 16px; letter-spacing: 0.1em; font-weight: 600; text-transform: uppercase; }
+
+        /* Map specific styles */
+        .map-layer-container {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { @apply bg-outline-variant rounded-full; }
+        ::-webkit-scrollbar-thumb:hover { @apply bg-outline; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-background">
+<!-- Sidebar (Left) -->
+<nav class="hidden md:flex flex-col w-72 h-screen flex-shrink-0 bg-surface-container-low border-r border-border-subtle p-stack-lg fixed left-0 top-0 z-40">
+<!-- Brand -->
+<div class="mb-stack-lg flex flex-col gap-1">
+<h1 class="font-headline-lg text-headline-lg text-heritage-green-deep">Fiscalização</h1>
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase">Departamento de Proteção</p>
+</div>
+<!-- Navigation Tabs -->
+<div class="flex flex-col gap-2 flex-grow">
+<!-- Painel -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out font-label-bold text-label-bold" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="">Painel</span>
+</a>
+<!-- Triagem -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out font-label-bold text-label-bold" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[20px]">checklist</span>
+<span class="">Triagem</span>
+</a>
+<!-- Inventário -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out font-label-bold text-label-bold" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[20px]">account_balance</span>
+<span class="">Inventário</span>
+</a>
+<!-- Mapas (Active) -->
+<a aria-current="page" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary-fixed text-on-primary-fixed-variant font-label-bold text-label-bold shadow-sm" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">map</span>
+<span class="">Mapas</span>
+</a>
+<!-- Relatórios -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out font-label-bold text-label-bold" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[20px]">assessment</span>
+<span class="">Relatórios</span>
+</a>
+</div>
+<!-- Footer Navigation -->
+<div class="flex flex-col gap-2 mt-auto pt-4 border-t border-border-subtle">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out font-label-bold text-label-bold" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[20px]">help_outline</span>
+<span class="">Suporte</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out font-label-bold text-label-bold" href="#">
+<span aria-hidden="true" class="material-symbols-outlined text-[20px]">logout</span>
+<span class="">Sair</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-72 h-screen relative w-full">
+<!-- TopAppBar -->
+<header class="w-full h-16 bg-surface border-b border-border-subtle flex justify-between items-center px-margin-desktop z-30 shrink-0">
+<!-- Mobile Menu Button (hidden on desktop) -->
+<button class="md:hidden p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Product Name -->
+<div class="font-headline-md text-headline-md font-bold text-primary truncate hidden md:block">
+                Sentinela do Patrimônio
+            </div>
+<!-- Right Actions -->
+<div class="flex items-center gap-2">
+<!-- Search -->
+<div class="relative hidden sm:block mr-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border border-border-subtle rounded-full text-sm focus:outline-none focus:border-institutional-blue focus:ring-1 focus:ring-institutional-blue transition-colors w-64" placeholder="Buscar no mapa..." type="text">
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-status-critical rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-primary hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:opacity-80 ml-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Map Container -->
+<div class="flex-1 relative w-full h-full bg-surface-container-lowest overflow-hidden">
+<!-- The Map Background (Simulated with image/color) -->
+<div class="absolute inset-0 bg-[#e5e5f7] z-0" data-alt="A highly detailed top-down view of a modern digital map interface, showing stylized topographic features, rivers, and boundaries of a region resembling Tocantins, Brazil. The map uses a clean, institutional light-mode aesthetic with soft greens, muted blues, and light grays. It looks like a professional geographic information system (GIS) with subtle grid lines and a flat, data-centric design language." data-location="Tocantins, Brasil" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD2kFfUz_lw5ErPF_zY9kqDMSBqThLxqEHCVLzQp_MmkI46gu5ZkRsBJB99gW-cs5TtIMcTP4flN3P5KTq7yrNXSEEYto5wF14dD39UG8Y1lOXG6K5ZkvQ3jqo_d28aMymAT8N4ggqjrridtdnLljykXPNGVjzZDfqk5r2HLZnae8oryhXGkzaVN8g_sbB--xIwnTudnQQc-oOprWzq4PQn93KVVz17DLCVFnh02enQoT48PgvkbrA3Mg'); background-size: cover; background-position: center;">
+<!-- Map Placeholder Background color if image fails -->
+<div class="absolute inset-0 bg-blue-50/50 mix-blend-overlay"></div>
+</div>
+<!-- Map Controls (Top Right) -->
+<div class="absolute top-6 right-6 flex flex-col gap-2 z-10">
+<div class="bg-surface-container-lowest border border-border-subtle rounded-lg shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] flex flex-col overflow-hidden map-layer-container">
+<button class="p-2.5 text-on-surface hover:bg-surface-container-low transition-colors border-b border-border-subtle" title="Zoom In">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="p-2.5 text-on-surface hover:bg-surface-container-low transition-colors" title="Zoom Out">
+<span class="material-symbols-outlined">remove</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest border border-border-subtle rounded-lg shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] flex flex-col mt-2 map-layer-container">
+<button class="p-2.5 text-primary hover:bg-surface-container-low transition-colors border-b border-border-subtle" title="Minha Localização">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+<button class="p-2.5 text-on-surface hover:bg-surface-container-low transition-colors border-b border-border-subtle" title="Medir Distância">
+<span class="material-symbols-outlined">straighten</span>
+</button>
+<button class="p-2.5 text-on-surface hover:bg-surface-container-low transition-colors" title="Alternar Visão">
+<span class="material-symbols-outlined">layers</span>
+</button>
+</div>
+</div>
+<!-- Layer Panel (Left Overlaid) -->
+<div class="absolute top-6 left-6 w-64 bg-surface-container-lowest/95 border border-border-subtle rounded-xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] map-layer-container z-10 flex flex-col max-h-[calc(100vh-140px)]">
+<div class="p-4 border-b border-border-subtle flex justify-between items-center bg-surface-container-lowest rounded-t-xl">
+<h3 class="font-label-bold text-label-bold uppercase text-on-surface">Camadas Ativas</h3>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+</button>
+</div>
+<div class="p-4 flex flex-col gap-4 overflow-y-auto"><!-- Search by Municipality -->
+<div class="flex flex-col gap-1.5 mb-2">
+    <label class="font-label-caps text-label-caps text-on-surface-variant">Município</label>
+    <div class="relative">
+        <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">location_on</span>
+        <input type="text" placeholder="Filtrar por cidade..." class="w-full pl-8 pr-3 py-1.5 bg-surface-container-low border border-border-subtle rounded text-xs focus:outline-none focus:border-primary transition-colors">
+    </div>
+</div>
+
+<!-- Status Filter -->
+<div class="flex flex-col gap-1.5 mb-2">
+    <label class="font-label-caps text-label-caps text-on-surface-variant">Status da Fiscalização</label>
+    <select class="w-full px-2 py-1.5 bg-surface-container-low border border-border-subtle rounded text-xs focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer">
+        <option value="">Todos os Status</option>
+        <option value="analise">Em Análise</option>
+        <option value="vistoriado">Vistoriado</option>
+        <option value="consolidado">Consolidado</option>
+    </select>
+</div>
+
+<div class="h-px bg-border-subtle w-full my-1"></div>
+
+<!-- Layer Toggles -->
+<div class="flex flex-col gap-3">
+    <label class="font-label-caps text-label-caps text-on-surface-variant">Camadas de Dados</label>
+    
+    <label class="flex items-center gap-3 cursor-pointer group">
+        <div class="relative flex items-center justify-center">
+            <input checked="" class="appearance-none w-4 h-4 border border-outline rounded-[2px] checked:bg-heritage-green-deep checked:border-heritage-green-deep transition-colors peer" type="checkbox">
+            <span class="material-symbols-outlined absolute text-[12px] text-white opacity-0 peer-checked:opacity-100 pointer-events-none">check</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-material-terracotta"></div>
+            <span class="font-body-sm text-sm text-on-surface">Bens Materiais</span>
+        </div>
+    </label>
+
+    <label class="flex items-center gap-3 cursor-pointer group">
+        <div class="relative flex items-center justify-center">
+            <input checked="" class="appearance-none w-4 h-4 border border-outline rounded-[2px] checked:bg-heritage-green-deep checked:border-heritage-green-deep transition-colors peer" type="checkbox">
+            <span class="material-symbols-outlined absolute text-[12px] text-white opacity-0 peer-checked:opacity-100 pointer-events-none">check</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-heritage-green-leaf"></div>
+            <span class="font-body-sm text-sm text-on-surface">Bens Naturais</span>
+        </div>
+    </label>
+
+    <label class="flex items-center gap-3 cursor-pointer group">
+        <div class="relative flex items-center justify-center">
+            <input class="appearance-none w-4 h-4 border border-outline rounded-[2px] checked:bg-heritage-green-deep checked:border-heritage-green-deep transition-colors peer" type="checkbox">
+            <span class="material-symbols-outlined absolute text-[12px] text-white opacity-0 peer-checked:opacity-100 pointer-events-none">check</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-material-ochre"></div>
+            <span class="font-body-sm text-sm text-on-surface">Sítios Arqueológicos</span>
+        </div>
+    </label>
+
+    <div class="h-px bg-border-subtle w-full my-1"></div>
+
+    <label class="flex items-center gap-3 cursor-pointer group">
+        <div class="relative flex items-center justify-center">
+            <input checked="" class="appearance-none w-4 h-4 border border-outline rounded-[2px] checked:bg-heritage-green-deep checked:border-heritage-green-deep transition-colors peer" type="checkbox">
+            <span class="material-symbols-outlined absolute text-[12px] text-white opacity-0 peer-checked:opacity-100 pointer-events-none">check</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px] text-status-critical" style="font-variation-settings: 'FILL' 1;">warning</span>
+            <span class="font-body-sm text-sm text-on-surface">Ocorrências Ativas</span>
+        </div>
+    </label>
+</div></div>
+</div>
+<!-- Legend (Bottom Left) -->
+<div class="absolute bottom-6 left-6 bg-surface-container-lowest/90 border border-border-subtle rounded-lg p-3 shadow-sm map-layer-container z-10 pointer-events-none">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-2">Legenda</h4>
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-material-terracotta"></div>
+<span class="text-xs text-on-surface font-body-sm">Material</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-heritage-green-leaf"></div>
+<span class="text-xs text-on-surface font-body-sm">Natural</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 rounded-full bg-status-critical animate-pulse"></div>
+<span class="text-xs text-on-surface font-body-sm">Alerta Crítico</span>
+</div>
+</div>
+</div>
+<!-- Selected Item Detail Sidebar (Right Overlaid) -->
+<div class="absolute top-6 right-[72px] w-80 bg-surface border border-border-subtle rounded-xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] z-20 flex flex-col h-[calc(100vh-140px)] transform transition-transform duration-300 translate-x-0" id="detailSidebar">
+<!-- Header -->
+<div class="p-4 border-b border-border-subtle flex justify-between items-start bg-surface rounded-t-xl">
+<div>
+<span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-material-terracotta/10 text-material-terracotta mb-1">
+                            Bem Material
+                        </span>
+<h2 class="font-headline-md text-headline-md text-on-surface text-lg leading-tight">Igreja de Nossa Senhora do Rosário dos Pretos</h2>
+</div>
+<button class="text-on-surface-variant hover:bg-surface-container-low p-1 rounded-full transition-colors" onclick="document.getElementById('detailSidebar').classList.add('translate-x-[120%]')">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Content -->
+<div class="p-4 flex flex-col gap-4 overflow-y-auto flex-1">
+<div class="grid grid-cols-2 gap-4">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-0.5">ID do Registro</p>
+<p class="font-body-sm text-sm font-medium text-on-surface">TO-MAT-0042</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-0.5">Município</p>
+<p class="font-body-sm text-sm font-medium text-on-surface">Natividade</p>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-3 border border-border-subtle">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-status-warning mt-0.5" style="font-variation-settings: 'FILL' 1;">error</span>
+<div>
+<p class="font-label-bold text-label-bold text-on-surface mb-1">Ocorrência em Aberto</p>
+<p class="text-xs text-on-surface-variant mb-2">Relato de infiltração na parede lateral esquerda (Nave principal).</p>
+<span class="text-[10px] text-on-surface-variant">Reportado em: 12/10/2023</span>
+</div>
+</div>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">Última Vistoria</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-status-stable">check_circle</span>
+<span class="font-body-sm text-sm text-on-surface">15 de Agosto de 2023</span>
+</div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="p-4 border-t border-border-subtle bg-surface rounded-b-xl">
+<button class="w-full bg-heritage-green-deep hover:bg-primary text-white font-label-bold text-label-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        Ver Dossiê Completo
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Fake Map Markers for context -->
+<!-- Marker 1 (Selected) -->
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer">
+<div class="relative flex items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-material-terracotta border-2 border-white shadow-md flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-white text-[12px]" style="font-variation-settings: 'FILL' 1;">church</span>
+</div>
+<!-- Selected indicator ring -->
+<div class="absolute w-10 h-10 rounded-full border-2 border-primary-container animate-pulse opacity-50"></div>
+</div>
+</div>
+<!-- Marker 2 (Warning) -->
+<div class="absolute top-1/3 left-1/4 transform -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer">
+<div class="relative flex items-center justify-center">
+<div class="w-6 h-6 rounded-full bg-heritage-green-leaf border-2 border-white shadow-md flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-white text-[12px]" style="font-variation-settings: 'FILL' 1;">forest</span>
+</div>
+<!-- Warning badge -->
+<div class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-status-critical border border-white z-20"></div>
+</div>
+</div>
+</div>
+</main>
+
+
+</body></html>

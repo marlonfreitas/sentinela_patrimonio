@@ -1,0 +1,85 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "MAT-01",
+        "identifica": "Ruínas do Rosário dos Pretos",
+        "no_logrado": "Natividade - Centro Histórico",
+        "ds_naturez": "Bem Material",
+        "codigo_iph": "IPHAN",
+        "dt_cadastr": "1987-10-15",
+        "desc": "Símbolo da arquitetura colonial inacabada em pedra, erguida por trabalhadores escravizados no século XVIII."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-47.7245, -11.7101]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "MAT-02",
+        "identifica": "Igreja Matriz N. Sra. dos Remédios",
+        "no_logrado": "Arraias - Centro",
+        "ds_naturez": "Bem Material",
+        "codigo_iph": "SECULT",
+        "dt_cadastr": "1992-06-18",
+        "desc": "Edificação religiosa histórica do século XIX, marco central da colonização e fé no sudeste tocantinense."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.9373, -12.9321]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "MAT-03",
+        "identifica": "Seminário São José",
+        "no_logrado": "Porto Nacional - Centro Histórico",
+        "ds_naturez": "Bem Material",
+        "codigo_iph": "IPHAN",
+        "dt_cadastr": "2008-04-10",
+        "desc": "Imponente prédio de dois andares do início do século XX, fundamental para a história da educação e clero no antigo norte goiano."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-48.4169, -10.7078]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "MAT-04",
+        "identifica": "Catedral N. Sra. da Consolação",
+        "no_logrado": "Tocantinópolis - Centro",
+        "ds_naturez": "Bem Material",
+        "codigo_iph": "Municipal",
+        "dt_cadastr": "1960-08-15",
+        "desc": "Importante igreja histórica no extremo norte, marco da presença dominicana na região do Bico do Papagaio."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-47.4128, -6.3275]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "MAT-05",
+        "identifica": "Casario da Rua Direita",
+        "no_logrado": "Natividade - Centro Histórico",
+        "ds_naturez": "Bem Material",
+        "codigo_iph": "IPHAN",
+        "dt_cadastr": "1987-10-15",
+        "desc": "Conjunto de casarões coloniais dos séculos XVIII e XIX com calçamento original de pedras ('pé-de-moleque')."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-47.7270, -11.7063]
+      }
+    }
+  ]
+}

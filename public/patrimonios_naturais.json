@@ -1,0 +1,101 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "NAT-01",
+        "identifica": "Parque Estadual do Lajeado",
+        "no_logrado": "Palmas / Lajeado",
+        "ds_naturez": "Bem Natural",
+        "codigo_iph": "PE",
+        "dt_cadastr": "2001-05-11",
+        "desc": "Área de preservação que protege as encostas da Serra do Lajeado, mananciais de água e a fauna típica do Cerrado."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-48.2462, -10.1013]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "NAT-02",
+        "identifica": "Parque Estadual do Cantão",
+        "no_logrado": "Caseara / Pium",
+        "ds_naturez": "Bem Natural",
+        "codigo_iph": "PE",
+        "dt_cadastr": "1998-07-14",
+        "desc": "Ecótono riquíssimo que une o Cerrado e a Floresta Amazônica, com mais de 800 lagos interligados e biodiversidade única."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-50.0680, -9.6900]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "NAT-03",
+        "identifica": "Monumento Natural das Árvores Fossilizadas",
+        "no_logrado": "Filadélfia",
+        "ds_naturez": "Bem Natural",
+        "codigo_iph": "MN",
+        "dt_cadastr": "2000-10-04",
+        "desc": "Floresta fossilizada do período Permiano, com fósseis de samambaias gigantes e caules preservados há mais de 250 milhões de anos."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-47.7920, -7.4450]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "NAT-04",
+        "identifica": "Parque Nacional do Araguaia",
+        "no_logrado": "Ilha do Bananal",
+        "ds_naturez": "Bem Natural",
+        "codigo_iph": "PN",
+        "dt_cadastr": "1959-12-31",
+        "desc": "Unidade federal localizada na maior ilha fluvial do mundo, protegendo ecossistemas do Pantanal, Cerrado e Floresta Amazônica."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-50.1670, -10.5000]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "NAT-05",
+        "identifica": "APA Ilha do Bananal/Cantão",
+        "no_logrado": "Pium / Caseara / Araguacema",
+        "ds_naturez": "Bem Natural",
+        "codigo_iph": "APA",
+        "dt_cadastr": "1997-05-20",
+        "desc": "Unidade de uso sustentável de 1.68 milhão de hectares, servindo de zona de amortecimento para o Parque do Cantão e a Ilha do Bananal."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-49.5278, -9.6558]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id_bem": "NAT-06",
+        "identifica": "Área de Proteção Ambiental do Jalapão",
+        "no_logrado": "Mateiros / Novo Acordo / Ponte Alta",
+        "ds_naturez": "Bem Natural",
+        "codigo_iph": "APA",
+        "dt_cadastr": "2000-07-28",
+        "desc": "Extensa unidade de conservação de uso sustentável que engloba as famosas dunas, fervedouros e cachoeiras da região do Jalapão."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.6750, -10.3778]
+      }
+    }
+  ]
+}
