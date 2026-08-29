@@ -55,9 +55,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   const activeOccurrences = filteredOccurrences.filter(o => o.status !== 'resolved').length;
   const totalDossiersGenerated = filteredOccurrences.filter(o => o.status === 'resolved' || o.report).length;
   
-  // Novas Métricas Sugeridas (FABrandt Tópico A)
-  const avgResolutionTime = timeFilter === '30d' ? '3.5 dias' : timeFilter === '6m' ? '4.8 dias' : '5.2 dias';
+  // Cálculo dinâmico do TMR (Tempo Médio de Resolução) baseado em ocorrências resolvidas
+  const resolvedOcos = filteredOccurrences.filter(o => o.status === 'resolved');
+  let avgResolutionTime = '5.2 dias';
+  if (resolvedOcos.length > 0) {
+    let totalDays = 0;
+    resolvedOcos.forEach(o => {
+      if (o.timeline.length >= 2) {
+        const start = new Date(o.timeline[0].date);
+        const end = new Date(o.timeline[o.timeline.length - 1].date);
+        const diff = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+        totalDays += diff;
+      }
+    });
+    avgResolutionTime = `${(totalDays / resolvedOcos.length).toFixed(1)} dias`;
+  }
+
   const iaConcordanceRate = timeFilter === '30d' ? '96.1%' : timeFilter === '6m' ? '94.8%' : '94.2%';
+  const citizenRepliesCount = filteredTriage.filter(t => t.status !== 'pending').length;
 
   // 3. Dados do Gráfico de Categoria (Barras)
   const categoryCounts = filteredAssets.reduce((acc, curr) => {
@@ -69,13 +84,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     { name: 'Material', quantidade: categoryCounts['material'] || 0, color: '#9A3412' },
     { name: 'Natural', quantidade: categoryCounts['natural'] || 0, color: '#064E3B' },
     { name: 'Arqueológico', quantidade: categoryCounts['arqueologico'] || 0, color: '#B45309' },
-    { name: 'Imaterial', quantidade: timeFilter === '30d' ? 0 : 1, color: '#1E40AF' },
+    { name: 'Imaterial', quantidade: categoryCounts['imaterial'] || 0, color: '#1E40AF' },
   ];
 
-  // 4. Dados do Gráfico de Origem dos Registros (Pizza)
-  const citizenCount = timeFilter === '30d' ? 6 : timeFilter === '6m' ? 10 : 12;
-  const technicalCount = timeFilter === '30d' ? 2 : timeFilter === '6m' ? 4 : 5;
-  const sensorCount = timeFilter === '30d' ? 1 : timeFilter === '6m' ? 2 : 2;
+  // 4. Dados do Gráfico de Origem dos Registros (Pizza) - Dinâmicos
+  const citizenCount = filteredTriage.length;
+  const technicalCount = filteredOccurrences.filter(o => o.auditor).length;
+  const sensorCount = filteredOccurrences.filter(o => !o.auditor).length;
 
   const originChartData = [
     { name: 'Denúncia Cidadã (App)', value: citizenCount, color: '#1E40AF' },
@@ -83,43 +98,58 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     { name: 'Sensores de Monitoramento', value: sensorCount, color: '#B45309' },
   ];
 
-  // 5. Novo Gráfico: Relação de Denúncias por Origem por Município (FABrandt Tópico A)
-  // Gráfico de barras empilhadas por município
-  const reportsByMunicipalityData = [
-    { municipio: 'Palmas', Cidadão: timeFilter === '30d' ? 8 : 15, Técnico: timeFilter === '30d' ? 2 : 3 },
-    { municipio: 'Natividade', Cidadão: timeFilter === '30d' ? 4 : 8, Técnico: timeFilter === '30d' ? 3 : 5 },
-    { municipio: 'Porto Nacional', Cidadão: timeFilter === '30d' ? 6 : 12, Técnico: timeFilter === '30d' ? 1 : 4 },
-    { municipio: 'Mateiros', Cidadão: timeFilter === '30d' ? 2 : 4, Técnico: timeFilter === '30d' ? 1 : 2 },
-  ];
+  // 5. Novo Gráfico: Relação de Denúncias por Origem por Município (Dinâmico)
+  const municipalities = ['Palmas', 'Natividade', 'Porto Nacional', 'Mateiros', 'Lajeado'];
+  const reportsByMunicipalityData = municipalities.map(muni => {
+    const muniTriages = filteredTriage.filter(t => t.location.toLowerCase().includes(muni.toLowerCase()));
+    const citizen = muniTriages.filter(t => t.anonymity === 'anonymous' || t.anonymity === 'confidential').length;
+    const technical = muniTriages.filter(t => t.anonymity === 'identified').length;
+    
+    return {
+      municipio: muni,
+      'Cidadão': citizen,
+      'Técnico': technical
+    };
+  });
 
-
-  // Dossiês e Trâmites Institucionais Recentes
-  const recentDossiers = [
-    {
-      id: 'DOS-2026-08',
-      bem: 'Sítio Gruta dos Desenhos',
-      orgao: 'IPHAN / SECULT-TO',
-      status: 'Análise Jurídica',
-      data: '24/08/2026',
-      retornoCidadao: 'Pendente'
-    },
-    {
-      id: 'DOS-2026-07',
-      bem: 'Igreja Matriz de Natividade',
-      orgao: 'Ministério Público Estadual',
-      status: 'Homologado/Encaminhado',
-      data: '18/08/2026',
-      retornoCidadao: 'Enviado (Protocolo #9281)'
-    },
-    {
-      id: 'DOS-2026-05',
-      bem: 'Catedral das Mercês',
-      orgao: 'Conselho de Cultura',
-      status: 'Aguardando Laudo Complementar',
-      data: '12/08/2026',
-      retornoCidadao: 'Não aplicável (Anônimo)'
-    }
-  ];
+  // Dossiês e Trâmites Institucionais Recentes (Dinâmicos baseados no Supabase com fallback histórico)
+  const referrals = filteredOccurrences.filter(o => o.referralDest && o.referralDest !== 'none');
+  const recentDossiers = referrals.length > 0 
+    ? referrals.map(o => {
+        const destLabels: Record<string, string> = {
+          mpto: 'MPTO (Estadual)',
+          iphan: 'IPHAN (Federal)',
+          secult: 'SECULT (Estadual)',
+          police: 'Polícia Civil',
+          none: 'Sem encaminhamento'
+        };
+        return {
+          id: o.referralCaseNumber || `DOS-${o.id}`,
+          bem: o.assetName,
+          orgao: destLabels[o.referralDest] || 'Órgão Externo',
+          status: o.status === 'resolved' ? 'Homologado' : 'Em Trâmite',
+          data: new Date(o.date).toLocaleDateString('pt-BR'),
+          retornoCidadao: o.referralNotes ? (o.referralNotes.length > 25 ? o.referralNotes.substring(0, 25) + '...' : o.referralNotes) : 'Enviado'
+        };
+      })
+    : [
+        {
+          id: 'DOS-2026-08',
+          bem: 'Sítio Gruta dos Desenhos',
+          orgao: 'IPHAN / SECULT-TO',
+          status: 'Em Trâmite',
+          data: '24/08/2026',
+          retornoCidadao: 'Pendente'
+        },
+        {
+          id: 'DOS-2026-07',
+          bem: 'Igreja Matriz de Natividade',
+          orgao: 'Ministério Público Estadual',
+          status: 'Homologado',
+          data: '18/08/2026',
+          retornoCidadao: 'Enviado (Protocolo #9281)'
+        }
+      ];
 
   return (
     <div className="space-y-stack-lg animate-fade-in">
@@ -256,7 +286,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       </div>
 
       {/* Novas Métricas de Desempenho e Qualidade FABrandt (Tópico A) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-gutter">
         {/* Métricas do TMR */}
         <div className="bento-card p-4 bg-white flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -279,17 +309,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           </div>
         </div>
 
-        {/* Integração GeoServer */}
-        <div className="bento-card p-4 bg-white flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-status-stable shrink-0">
-            <span className="material-symbols-outlined text-[20px]">sync</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-on-surface-variant uppercase font-label-caps block tracking-wider">Status GeoServer</span>
-            <span className="text-body-md font-bold text-status-stable">Sincronizado</span>
-          </div>
-        </div>
-
         {/* Retorno ao Cidadão */}
         <div className="bento-card p-4 bg-white flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
@@ -297,7 +316,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           </div>
           <div>
             <span className="text-[10px] text-on-surface-variant uppercase font-label-caps block tracking-wider">Retornos Enviados</span>
-            <span className="text-body-md font-bold text-on-surface">{timeFilter === '30d' ? 8 : timeFilter === '6m' ? 14 : 17} cidadãos</span>
+            <span className="text-body-md font-bold text-on-surface">{citizenRepliesCount} cidadãos</span>
           </div>
         </div>
       </div>
