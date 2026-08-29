@@ -13,8 +13,17 @@ interface DataContextType {
   addOccurrence: (occurrence: Omit<Occurrence, 'id'>) => void;
   updateOccurrenceStatus: (id: string, status: Occurrence['status'], auditor?: string, report?: string) => void;
   scheduleAudit: (id: string, date: string, auditor: string) => void;
-  addCitizenTriage: (item: Omit<TriageItem, 'id' | 'status' | 'date' | 'timeline'>) => { id: string; accessKey?: string };
+  addCitizenTriage: (item: Omit<TriageItem, 'id' | 'status' | 'date' | 'timeline'>, idPrefix?: 'DEN' | 'SUG') => { id: string; accessKey?: string };
   updateOccurrenceReferral: (id: string, referralDest: Occurrence['referralDest'], referralCaseNumber?: string, referralNotes?: string) => void;
+  approveAssetSuggestion: (
+    id: string,
+    name: string,
+    category: 'material' | 'natural' | 'arqueologico',
+    location: string,
+    coordinates: [number, number],
+    geometryType: 'point' | 'polygon',
+    polygonCoords?: [number, number][]
+  ) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -607,10 +616,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addCitizenTriage = (item: Omit<TriageItem, 'id' | 'status' | 'date' | 'timeline'>) => {
-    const id = `DEN-${Math.floor(1000 + Math.random() * 9000)}`;
+  const addCitizenTriage = (item: Omit<TriageItem, 'id' | 'status' | 'date' | 'timeline'>, idPrefix: 'DEN' | 'SUG' = 'DEN') => {
+    const id = `${idPrefix}-${Math.floor(1000 + Math.random() * 9000)}`;
     const accessKey = item.anonymity === 'anonymous' ? `KEY-${Math.floor(1000 + Math.random() * 9000)}` : undefined;
-    const newTriage: TriageItem = { ...item, id, date: new Date().toISOString(), status: 'pending', accessKey, timeline: [{ status: 'Envio', date: new Date().toISOString(), description: 'Denúncia recebida.' }] };
+    const newTriage: TriageItem = { 
+      ...item, 
+      id, 
+      date: new Date().toISOString(), 
+      status: 'pending', 
+      accessKey, 
+      timeline: [{ 
+        status: 'Envio', 
+        date: new Date().toISOString(), 
+        description: idPrefix === 'SUG' ? 'Sugestão de novo bem enviada com sucesso.' : 'Denúncia recebida.' 
+      }] 
+    };
     setTriageItems(prev => [newTriage, ...prev]);
     const isConfigured = import.meta.env.VITE_SUPABASE_ANON_KEY && import.meta.env.VITE_SUPABASE_ANON_KEY !== 'INSIRA_SUA_CHAVE_ANON_AQUI';
     if (isConfigured) {
@@ -619,6 +639,55 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     }
     return { id, accessKey };
+  };
+
+  const approveAssetSuggestion = async (
+    id: string,
+    name: string,
+    category: 'material' | 'natural' | 'arqueologico',
+    location: string,
+    coordinates: [number, number],
+    geometryType: 'point' | 'polygon',
+    polygonCoords?: [number, number][]
+  ) => {
+    const item = triageItems.find(t => t.id === id);
+    if (!item) return;
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    const timestamp = new Date().toISOString();
+    const isConfigured = import.meta.env.VITE_SUPABASE_ANON_KEY && import.meta.env.VITE_SUPABASE_ANON_KEY !== 'INSIRA_SUA_CHAVE_ANON_AQUI';
+
+    const newAssetId = `PAT-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newAsset: Asset = {
+      id: newAssetId,
+      name,
+      category,
+      location,
+      coordinates,
+      status: 'stable',
+      description: item.description,
+      lastAudit: dateStr,
+      source: 'suggestion',
+      geometryType,
+      polygonCoords
+    };
+
+    setAssets(prev => [...prev, newAsset]);
+
+    const updatedTimeline = [
+      ...item.timeline,
+      { status: 'Sugestão Aprovada', date: timestamp, description: `Patrimônio catalogado oficialmente com o código ${newAssetId}.` }
+    ];
+
+    setTriageItems(prev => prev.map(t => t.id === id ? { ...t, status: 'approved', timeline: updatedTimeline } : t));
+
+    if (isConfigured) {
+      const { error: errorAsset } = await supabase.from('assets').insert(mapAssetToDb(newAsset));
+      if (errorAsset) console.error('Erro ao cadastrar novo bem sugerido no Supabase:', errorAsset);
+
+      const { error: errorTriage } = await supabase.from('triage_items').update({ status: 'approved', timeline: updatedTimeline }).eq('id', id);
+      if (errorTriage) console.error('Erro ao atualizar sugestão no Supabase:', errorTriage);
+    }
   };
 
   const updateOccurrenceReferral = async (id: string, referralDest: Occurrence['referralDest'], referralCaseNumber?: string, referralNotes?: string) => {
@@ -634,7 +703,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <DataContext.Provider value={{ assets, triageItems, occurrences, addAsset, updateAsset, approveTriageItem, archiveTriageItem, addOccurrence, updateOccurrenceStatus, scheduleAudit, addCitizenTriage, updateOccurrenceReferral }}>
+    <DataContext.Provider value={{ assets, triageItems, occurrences, addAsset, updateAsset, approveTriageItem, archiveTriageItem, addOccurrence, updateOccurrenceStatus, scheduleAudit, addCitizenTriage, updateOccurrenceReferral, approveAssetSuggestion }}>
       {children}
     </DataContext.Provider>
   );

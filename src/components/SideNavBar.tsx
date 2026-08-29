@@ -16,7 +16,10 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({ activeTab, setActiveTab,
   const { triageItems } = useData();
 
   // Contar denúncias pendentes de triagem
-  const pendingTriageCount = triageItems.filter(item => item.status === 'pending').length;
+  const pendingTriageCount = triageItems.filter(item => item.status === 'pending' && item.id.startsWith('DEN-')).length;
+
+  // Contar sugestões de bens pendentes
+  const pendingSuggestionsCount = triageItems.filter(item => item.status === 'pending' && item.id.startsWith('SUG-')).length;
 
   const citizenItems = [
     { id: 'inventory', label: 'Inventário', icon: 'inventory_2' },
@@ -26,7 +29,8 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({ activeTab, setActiveTab,
 
   const internalItems = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { id: 'triage', label: 'Triagem', icon: 'fact_check', badge: pendingTriageCount },
+    { id: 'triage', label: 'Triagem Denúncias', icon: 'fact_check', badge: pendingTriageCount },
+    { id: 'suggestions-triage', label: 'Sugestões de Bens', icon: 'add_moderator', badge: pendingSuggestionsCount },
     { id: 'occurrences', label: 'Ocorrências', icon: 'warning' },
   ];
 

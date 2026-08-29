@@ -4,6 +4,7 @@ import { SideNavBar } from './components/SideNavBar';
 import { TopAppBar } from './components/TopAppBar';
 import { Dashboard } from './pages/gestao_interna/Dashboard';
 import { Triage } from './pages/gestao_interna/Triage';
+import { SuggestionsTriage } from './pages/gestao_interna/SuggestionsTriage';
 import { Inventory } from './pages/portal_do_cidadao/Inventory';
 import { Occurrences } from './pages/gestao_interna/Occurrences';
 import { Map } from './pages/portal_do_cidadao/Map';
@@ -29,6 +30,8 @@ const MainAppContent: React.FC = () => {
         return <Dashboard setActiveTab={setActiveTab} />;
       case 'triage':
         return <Triage />;
+      case 'suggestions-triage':
+        return <SuggestionsTriage />;
       case 'inventory':
         return <Inventory />;
       case 'occurrences':

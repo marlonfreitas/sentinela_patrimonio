@@ -36,6 +36,7 @@ export const CitizenChannel: React.FC = () => {
   const [suggestAnonymity, setSuggestAnonymity] = useState<'anonymous' | 'confidential' | 'identified'>('anonymous');
   const [suggestReporterName, setSuggestReporterName] = useState('');
   const [suggestReporterContact, setSuggestReporterContact] = useState('');
+  const [suggestPhotos, setSuggestPhotos] = useState<string[]>([]);
 
   // Estados - Consulta
   const [searchTrackingId, setSearchTrackingId] = useState('');
@@ -97,17 +98,23 @@ export const CitizenChannel: React.FC = () => {
       return;
     }
 
+    if (suggestPhotos.length === 0) {
+      alert('Atenção: A sugestão de novo bem requer o envio de pelo menos 1 foto do local/monumento.');
+      return;
+    }
+
     const { id } = addCitizenTriage({
       assetName: suggestName,
-      description: `[Sugestão de Novo Bem] Categoria: ${suggestCategory}. Justificativa: ${suggestDesc}`,
+      description: suggestDesc,
       urgency: 'low',
       iaSuggestion: 'Outros',
       location: suggestLocation,
       anonymity: suggestAnonymity,
       reporterName: suggestAnonymity !== 'anonymous' ? suggestReporterName : undefined,
       reporterContact: suggestAnonymity !== 'anonymous' ? suggestReporterContact : undefined,
-      coordinates: [suggestLat, suggestLng]
-    });
+      coordinates: [suggestLat, suggestLng],
+      photos: suggestPhotos
+    }, 'SUG');
 
     setSubmittedId(id);
     setSubmittedAccessKey(null);
@@ -118,6 +125,7 @@ export const CitizenChannel: React.FC = () => {
     setSuggestDesc('');
     setSuggestReporterName('');
     setSuggestReporterContact('');
+    setSuggestPhotos([]);
   };
 
   const handleTrackSubmit = (e: React.FormEvent) => {
@@ -651,6 +659,65 @@ export const CitizenChannel: React.FC = () => {
                   />
                 </div>
 
+                {/* Envio de Fotos para Sugestão */}
+                <div className="space-y-2 pt-2 border-t border-border-subtle">
+                  <label className="block font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider flex justify-between items-center">
+                    <span>Anexar Fotos do Patrimônio (Mínimo de 1 foto) *</span>
+                    <span className={`text-[10px] font-bold ${suggestPhotos.length >= 1 ? 'text-status-stable' : 'text-status-critical'}`}>
+                      {suggestPhotos.length} de 3 anexada(s)
+                    </span>
+                  </label>
+                  
+                  <div className="grid grid-cols-3 gap-2">
+                    {[1, 2, 3].map((num) => {
+                      const photoIndex = num - 1;
+                      const hasPhoto = suggestPhotos[photoIndex] !== undefined;
+                      return (
+                        <div key={num} className="relative w-full h-24 rounded border border-dashed border-border-subtle bg-surface-gray flex flex-col items-center justify-center overflow-hidden group">
+                          {hasPhoto ? (
+                            <>
+                              <img 
+                                src={suggestPhotos[photoIndex]} 
+                                alt={`Foto Sugestão ${num}`} 
+                                className="w-full h-full object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSuggestPhotos(prev => prev.filter((_, idx) => idx !== photoIndex));
+                                }}
+                                className="absolute top-1 right-1 bg-status-critical text-white p-1 rounded-full opacity-80 hover:opacity-100 transition-opacity"
+                              >
+                                <span className="material-symbols-outlined text-xs block">close</span>
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const suggestPhotosMock = [
+                                  'https://images.unsplash.com/photo-1544816155-12df9643f363?w=400',
+                                  'https://images.unsplash.com/photo-1563911302283-d2bc129e7570?w=400',
+                                  'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400'
+                                ];
+                                const mockImg = suggestPhotosMock[suggestPhotos.length % suggestPhotosMock.length] + `&sig=${Math.random()}`;
+                                setSuggestPhotos(prev => [...prev, mockImg]);
+                              }}
+                              className="w-full h-full flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors gap-1 cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">add_a_photo</span>
+                              <span className="text-[10px]">Adicionar Foto {num}</span>
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] text-on-surface-variant italic">
+                    Clique nos botões acima para anexar as fotos do bem sugerido (necessário pelo menos 1 foto para validação).
+                  </p>
+                </div>
+
                 {/* Nível de Sigilo */}
                 <div className="space-y-2 pt-2 border-t border-border-subtle">
                   <label className="block font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider">
@@ -798,11 +865,11 @@ export const CitizenChannel: React.FC = () => {
                           : 'bg-gray-100 text-gray-500'
                       }`}>
                         {trackedItem.status === 'pending' && 'Em Triagem'}
-                        {trackedItem.status === 'approved' && 'Aprovado / Ocorrência Aberta'}
-                        {trackedItem.status === 'archived' && 'Arquivado'}
+                        {trackedItem.status === 'approved' && (trackedItem.id.startsWith('SUG-') ? 'Sugestão Aprovada' : 'Aprovado / Ocorrência Aberta')}
+                        {trackedItem.status === 'archived' && (trackedItem.id.startsWith('SUG-') ? 'Sugestão Recusada' : 'Arquivado')}
                       </span>
                     </div>
-
+ 
                     {/* Descrição */}
                     <div className="space-y-1">
                       <span className="font-label-caps text-[10px] text-on-surface-variant uppercase block">Relato Enviado</span>
@@ -810,7 +877,7 @@ export const CitizenChannel: React.FC = () => {
                         {trackedItem.description}
                       </p>
                     </div>
-
+ 
                     {/* Detalhes de Retorno Técnico (Laudo e Parecer) */}
                     {trackedOccurrence && trackedOccurrence.status === 'resolved' && (
                       <div className="p-4 bg-green-50 rounded-xl border border-green-200 space-y-3 animate-fade-in">
@@ -841,6 +908,30 @@ export const CitizenChannel: React.FC = () => {
                       </div>
                     )}
 
+                    {/* Retorno Técnico para Sugestões */}
+                    {trackedItem.id.startsWith('SUG-') && trackedItem.status === 'approved' && (
+                      <div className="p-4 bg-green-50 rounded-xl border border-green-200 space-y-3 animate-fade-in">
+                        <h5 className="font-label-caps text-green-800 font-bold uppercase text-[11px] tracking-wider flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[15px]">verified</span>
+                          Retorno Técnico (CAOMA/MPTO)
+                        </h5>
+                        <p className="text-on-surface text-body-sm leading-relaxed font-semibold text-status-stable">
+                          Sua sugestão de catalogação foi avaliada e aprovada pela equipe técnica do CAOMA. O bem foi integrado oficialmente ao inventário público do Sentinela do Patrimônio!
+                        </p>
+                      </div>
+                    )}
+                    {trackedItem.id.startsWith('SUG-') && trackedItem.status === 'archived' && (
+                      <div className="p-4 bg-red-50 rounded-xl border border-red-200 space-y-3 animate-fade-in">
+                        <h5 className="font-label-caps text-red-800 font-bold uppercase text-[11px] tracking-wider flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[15px]">info</span>
+                          Retorno Técnico (CAOMA/MPTO)
+                        </h5>
+                        <p className="text-on-surface text-body-sm leading-relaxed text-status-critical">
+                          Após análise técnica da equipe do CAOMA, a sugestão de inclusão deste bem foi arquivada. Agradecemos sua colaboração na defesa do patrimônio tocantinense.
+                        </p>
+                      </div>
+                    )}
+ 
                     {/* Timeline de Rastreabilidade */}
                     <div className="space-y-4 pt-3 border-t border-border-subtle">
                       <span className="font-label-caps text-label-caps text-primary uppercase font-bold tracking-wider">
