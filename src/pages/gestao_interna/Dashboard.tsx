@@ -11,6 +11,9 @@ import {
   Pie, 
   Cell
 } from 'recharts';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+
 
 interface DashboardProps {
   setActiveTab: (tab: string) => void;
@@ -54,6 +57,82 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   const pendingTriageCount = filteredTriage.filter(t => t.status === 'pending').length;
   const activeOccurrences = filteredOccurrences.filter(o => o.status !== 'resolved').length;
   const totalDossiersGenerated = filteredOccurrences.filter(o => o.status === 'resolved' || o.report).length;
+
+  // 2.1. Preparação de Dados para o Mapa Operacional
+  // Função para criar o ícone customizado de acordo com o status operacional (FABrandt Sec 6.8)
+  const createOperationalIcon = (type: 'pending_triage' | 'waiting_visit' | 'in_visit') => {
+    let color = '#1E40AF'; // pending_triage (Azul)
+    let iconSymbol = 'campaign'; // Denúncia cidadã / alto-falante
+    let label = 'Triagem';
+
+    if (type === 'waiting_visit') {
+      color = '#B91C1C'; // waiting_visit (Vermelho)
+      iconSymbol = 'warning'; // Perigo / Atenção
+      label = 'Aguardando Vistoria';
+    } else if (type === 'in_visit') {
+      color = '#D97706'; // in_visit (Laranja)
+      iconSymbol = 'engineering'; // Vistoriando / Engenharia
+      label = 'Em Vistoria';
+    }
+
+    return L.divIcon({
+      html: `
+        <div class="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white shadow-lg cursor-pointer transition-transform hover:scale-110" style="background-color: ${color}" title="${label}">
+          <span class="material-symbols-outlined text-[16px] text-white font-bold">${iconSymbol}</span>
+        </div>
+      `,
+      className: 'custom-operational-marker',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32],
+    });
+  };
+
+  // Filtragem e mapeamento de pontos do mapa
+  const pendingTriagePoints = filteredTriage
+    .filter(t => t.status === 'pending' && t.coordinates)
+    .map(t => ({
+      id: t.id,
+      name: t.assetName,
+      title: t.iaSuggestion ? `Urgência ${t.urgency.toUpperCase()} - Sugestão IA: ${t.iaSuggestion}` : 'Nova Denúncia',
+      description: t.description,
+      location: t.location,
+      coordinates: t.coordinates!,
+      type: 'pending_triage' as const,
+      date: t.date,
+      extraInfo: `Enviado por: ${t.anonymity === 'anonymous' ? 'Anônimo' : t.reporterName || 'Cidadão'}`
+    }));
+
+  const activeOccurrencePoints = filteredOccurrences
+    .filter(o => o.status === 'open' || o.status === 'auditing')
+    .map(o => {
+      const associatedAsset = assets.find(a => a.id === o.assetId);
+      if (!associatedAsset || !associatedAsset.coordinates) return null;
+      return {
+        id: o.id,
+        name: o.assetName,
+        title: o.title,
+        description: o.description,
+        location: associatedAsset.location,
+        coordinates: associatedAsset.coordinates,
+        type: o.status === 'open' ? 'waiting_visit' : 'in_visit',
+        date: o.date,
+        extraInfo: o.auditor ? `Auditor Técnico: ${o.auditor}` : 'Sem auditor designado ainda'
+      };
+    })
+    .filter(Boolean) as {
+      id: string;
+      name: string;
+      title: string;
+      description: string;
+      location: string;
+      coordinates: [number, number];
+      type: 'waiting_visit' | 'in_visit';
+      date: string;
+      extraInfo: string;
+    }[];
+
+  const mapPoints = [...pendingTriagePoints, ...activeOccurrencePoints];
   
   // Cálculo dinâmico do TMR (Tempo Médio de Resolução) baseado em ocorrências resolvidas
   const resolvedOcos = filteredOccurrences.filter(o => o.status === 'resolved');
@@ -496,6 +575,132 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         </div>
 
       </div>
+
+      {/* Seção do Mapa: Localização de Denúncias Ativas / Aguardando Vistoria */}
+      <div className="bento-card p-6 flex flex-col gap-4 mt-6">
+        <div>
+          <h3 className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">
+            Mapa de Monitoramento Operacional (Triagens e Vistorias)
+          </h3>
+          <p className="text-[11px] text-on-surface-variant mt-1">
+            Visualização geográfica das denúncias cidadãs pendentes de validação e das ocorrências que necessitam de vistoria técnica.
+          </p>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-gutter">
+          {/* Mapa Container */}
+          <div className="flex-1 h-[400px] relative rounded-xl border border-border-subtle overflow-hidden z-0 shadow-inner">
+            <MapContainer 
+              center={[-10.249, -48.324]} 
+              zoom={7} 
+              scrollWheelZoom={false}
+              style={{ width: '100%', height: '100%' }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {mapPoints.map((point) => (
+                <Marker
+                  key={point.id}
+                  position={point.coordinates}
+                  icon={createOperationalIcon(point.type)}
+                >
+                  <Popup>
+                    <div className="p-1 space-y-2 text-on-surface font-body-sm max-w-[240px]">
+                      <div>
+                        <span className="font-mono text-[9px] text-outline-variant">{point.id}</span>
+                        <h4 className="font-bold text-primary text-[13px] leading-tight m-0">{point.name}</h4>
+                        <p className="text-[10px] text-on-surface-variant m-0">{point.location}</p>
+                      </div>
+
+                      <div className="flex flex-col gap-0.5 border-t border-b border-border-subtle/50 py-1.5 text-[10px]">
+                        <span className="font-bold text-on-surface">Caso: {point.title}</span>
+                        <span className="text-on-surface-variant">{point.extraInfo}</span>
+                        <span className="text-on-surface-variant">Data: {new Date(point.date).toLocaleDateString('pt-BR')}</span>
+                      </div>
+
+                      <p className="text-[11px] leading-relaxed text-on-surface-variant m-0">
+                        {point.description}
+                      </p>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
+
+          {/* Legenda Operacional */}
+          <div className="w-full lg:w-72 shrink-0 flex flex-col justify-between bg-surface-gray/50 rounded-xl p-4 border border-border-subtle/60 gap-4">
+            <div className="space-y-4">
+              <h4 className="font-label-caps text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-2">
+                Filtros / Status Operacionais
+              </h4>
+
+              <div className="space-y-3.5">
+                {/* Status 1: Aguardando Triagem */}
+                <div className="flex items-start gap-3">
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center bg-[#1E40AF] shrink-0 border border-white shadow-sm">
+                    <span className="material-symbols-outlined text-white text-[16px]">campaign</span>
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-body-sm text-on-surface">Aguardando Triagem</span>
+                      <span className="bg-[#1E40AF]/15 text-[#1E40AF] text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                        {pendingTriagePoints.length}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-on-surface-variant leading-tight mt-0.5">
+                      Relatos enviados pela população ainda não validados pela equipe técnica do CAOMA.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Status 2: Aguardando Vistoria */}
+                <div className="flex items-start gap-3">
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center bg-[#B91C1C] shrink-0 border border-white shadow-sm">
+                    <span className="material-symbols-outlined text-white text-[16px]">warning</span>
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-body-sm text-on-surface">Aguardando Vistoria</span>
+                      <span className="bg-[#B91C1C]/15 text-[#B91C1C] text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                        {activeOccurrencePoints.filter(p => p.type === 'waiting_visit').length}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-on-surface-variant leading-tight mt-0.5">
+                      Ocorrências oficiais abertas e que necessitam de vistoria/laudo pericial técnico em campo.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Status 3: Em Vistoria */}
+                <div className="flex items-start gap-3">
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center bg-[#D97706] shrink-0 border border-white shadow-sm">
+                    <span className="material-symbols-outlined text-white text-[16px]">engineering</span>
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-body-sm text-on-surface">Em Vistoria</span>
+                      <span className="bg-[#D97706]/15 text-[#D97706] text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                        {activeOccurrencePoints.filter(p => p.type === 'in_visit').length}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-on-surface-variant leading-tight mt-0.5">
+                      Vistorias técnicas agendadas ou em andamento sob responsabilidade de um auditor designado.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-[10px] text-on-surface-variant border-t border-border-subtle/50 pt-3">
+              <span>Total de demandas ativas: <strong>{mapPoints.length}</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };
