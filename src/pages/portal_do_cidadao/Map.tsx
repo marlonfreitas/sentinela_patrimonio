@@ -22,6 +22,10 @@ export const Map: React.FC = () => {
   const [mapCenter, setMapCenter] = useState<[number, number]>([-10.249, -48.324]); // Palmas/TO
   const [mapZoom, setMapZoom] = useState<number>(7);
 
+  // Estados de visibilidade dos painéis flutuantes (Legenda e Filtros) para responsividade
+  const [showFilters, setShowFilters] = useState<boolean>(window.innerWidth >= 1024);
+  const [showLegend, setShowLegend] = useState<boolean>(window.innerWidth >= 1024);
+
   // Filtragem dos bens para exibição no mapa
   const mapAssets = assets.filter(asset => {
     const matchesCategory = selectedCategory === 'Todos' || asset.category === selectedCategory;
@@ -151,94 +155,132 @@ export const Map: React.FC = () => {
       <div className="flex-1 h-full w-full relative z-0">
         
         {/* Painel Flutuante de Filtros (Top Right) com Backdrop Blur (Regra de Design do IPHAN/Secult) */}
-        <div className="absolute top-4 right-4 z-[1000] glass-panel p-4 rounded-xl border border-heritage-green-deep/30 map-layer-container max-w-[280px] space-y-3 shadow-md">
-          <h4 className="font-label-caps text-[10px] text-heritage-green-deep font-bold uppercase tracking-wider flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]">layers</span>
-            Controle de Camadas
-          </h4>
+        {showFilters ? (
+          <div className="absolute top-4 right-4 z-[1000] glass-panel p-4 rounded-xl border border-heritage-green-deep/30 map-layer-container w-[280px] space-y-3 shadow-md">
+            <div className="flex items-center justify-between">
+              <h4 className="font-label-caps text-[10px] text-heritage-green-deep font-bold uppercase tracking-wider flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">layers</span>
+                Controle de Camadas
+              </h4>
+              <button 
+                onClick={() => setShowFilters(false)}
+                className="text-on-surface-variant hover:text-status-critical p-0.5 rounded transition-colors flex items-center justify-center cursor-pointer"
+                title="Minimizar Filtros"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
 
-          {/* Fonte de Cadastro (IPHAN vs Cidadão) */}
-          <div className="space-y-1">
-            <label className="block text-[10px] font-bold text-on-surface-variant uppercase">Origem/Base</label>
-            <select
-              value={selectedSource}
-              onChange={(e) => setSelectedSource(e.target.value)}
-              className="w-full bg-white/95 border border-border-subtle rounded py-1 px-2 text-body-sm text-on-surface focus:outline-none focus:border-heritage-green-deep cursor-pointer"
+            {/* Fonte de Cadastro (IPHAN vs Cidadão) */}
+            <div className="space-y-1">
+              <label className="block text-[10px] font-bold text-on-surface-variant uppercase">Origem/Base</label>
+              <select
+                value={selectedSource}
+                onChange={(e) => setSelectedSource(e.target.value)}
+                className="w-full bg-white/95 border border-border-subtle rounded py-1 px-2 text-body-sm text-on-surface focus:outline-none focus:border-heritage-green-deep cursor-pointer"
+              >
+                <option value="Todos">Todas as Bases</option>
+                <option value="oficial">Cadastro Oficial (IPHAN/SECULT)</option>
+                <option value="sugestao">Sugestões Cidadãs (App)</option>
+              </select>
+            </div>
+
+            {/* Categoria */}
+            <div className="space-y-1">
+              <label className="block text-[10px] font-bold text-on-surface-variant uppercase">Categoria</label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full bg-white/95 border border-border-subtle rounded py-1 px-2 text-body-sm text-on-surface focus:outline-none focus:border-heritage-green-deep cursor-pointer"
+              >
+                <option value="Todos">Todos os Tipos</option>
+                <option value="material">Material (Edificado)</option>
+                <option value="natural">Natural</option>
+                <option value="arqueologico">Arqueológico</option>
+              </select>
+            </div>
+
+            {/* Preservação */}
+            <div className="space-y-1">
+              <label className="block text-[10px] font-bold text-on-surface-variant uppercase">Preservação</label>
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="w-full bg-white/95 border border-border-subtle rounded py-1 px-2 text-body-sm text-on-surface focus:outline-none focus:border-heritage-green-deep cursor-pointer"
+              >
+                <option value="Todos">Todos os Status</option>
+                <option value="stable">Preservado</option>
+                <option value="warning">Alerta</option>
+                <option value="critical">Crítico</option>
+              </select>
+            </div>
+
+            <button
+              onClick={() => { setMapCenter([-10.249, -48.324]); setMapZoom(7); }}
+              className="w-full py-1.5 bg-heritage-green-deep hover:bg-primary text-white text-[11px] font-label-bold uppercase rounded transition-colors text-center cursor-pointer"
             >
-              <option value="Todos">Todas as Bases</option>
-              <option value="oficial">Cadastro Oficial (IPHAN/SECULT)</option>
-              <option value="sugestao">Sugestões Cidadãs (App)</option>
-            </select>
+              Focalizar Tocantins
+            </button>
           </div>
-
-          {/* Categoria */}
-          <div className="space-y-1">
-            <label className="block text-[10px] font-bold text-on-surface-variant uppercase">Categoria</label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full bg-white/95 border border-border-subtle rounded py-1 px-2 text-body-sm text-on-surface focus:outline-none focus:border-heritage-green-deep cursor-pointer"
-            >
-              <option value="Todos">Todos os Tipos</option>
-              <option value="material">Material (Edificado)</option>
-              <option value="natural">Natural</option>
-              <option value="arqueologico">Arqueológico</option>
-            </select>
-          </div>
-
-          {/* Preservação */}
-          <div className="space-y-1">
-            <label className="block text-[10px] font-bold text-on-surface-variant uppercase">Preservação</label>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full bg-white/95 border border-border-subtle rounded py-1 px-2 text-body-sm text-on-surface focus:outline-none focus:border-heritage-green-deep cursor-pointer"
-            >
-              <option value="Todos">Todos os Status</option>
-              <option value="stable">Preservado</option>
-              <option value="warning">Alerta</option>
-              <option value="critical">Crítico</option>
-            </select>
-          </div>
-
-          <button
-            onClick={() => { setMapCenter([-10.249, -48.324]); setMapZoom(7); }}
-            className="w-full py-1.5 bg-heritage-green-deep hover:bg-primary text-white text-[11px] font-label-bold uppercase rounded transition-colors text-center"
+        ) : (
+          <button 
+            onClick={() => setShowFilters(true)}
+            className="absolute top-4 right-4 z-[1000] w-10 h-10 rounded-full bg-white/95 border border-heritage-green-deep/30 shadow-md flex items-center justify-center hover:bg-surface-container-low text-heritage-green-deep transition-all duration-200 cursor-pointer animate-fade-in"
+            title="Abrir Controle de Camadas"
           >
-            Focalizar Tocantins
+            <span className="material-symbols-outlined text-[20px]">layers</span>
           </button>
-        </div>
+        )}
 
         {/* Legenda do Mapa (Bottom Left) com Backdrop Blur */}
-        <div className="absolute bottom-4 left-4 z-[1000] glass-panel p-3.5 rounded-lg border border-heritage-green-deep/20 map-layer-container max-w-[240px] shadow-md text-[11px] space-y-2">
-          <h5 className="font-label-caps text-[9px] text-on-surface-variant font-bold uppercase tracking-wider m-0">Legenda Sentinela</h5>
-          
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-status-stable" />
-              <span className="text-on-surface-variant">Estável / Preservado</span>
+        {showLegend ? (
+          <div className="absolute bottom-4 left-4 z-[1000] glass-panel p-3.5 rounded-lg border border-heritage-green-deep/20 map-layer-container w-[240px] shadow-md text-[11px] space-y-2 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <h5 className="font-label-caps text-[9px] text-on-surface-variant font-bold uppercase tracking-wider m-0">Legenda Sentinela</h5>
+              <button 
+                onClick={() => setShowLegend(false)}
+                className="text-on-surface-variant hover:text-status-critical p-0.5 rounded transition-colors flex items-center justify-center cursor-pointer"
+                title="Minimizar Legenda"
+              >
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-status-warning" />
-              <span className="text-on-surface-variant">Alerta (Dano Médio)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-status-critical" />
-              <span className="text-on-surface-variant">Crítico / Sob Risco</span>
-            </div>
-            <div className="h-px bg-border-subtle/50 my-1" />
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[14px] text-on-surface-variant">polyline</span>
-              <span className="text-on-surface-variant">Área / Polígono (Tombamento)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full border border-dashed border-institutional-blue flex items-center justify-center shrink-0">
-                <div className="w-1.5 h-1.5 rounded-full bg-institutional-blue" />
+            
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-status-stable" />
+                <span className="text-on-surface-variant">Estável / Preservado</span>
               </div>
-              <span className="text-on-surface-variant">Ponto de Sugestão Cidadã</span>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-status-warning" />
+                <span className="text-on-surface-variant">Alerta (Dano Médio)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-status-critical" />
+                <span className="text-on-surface-variant">Crítico / Sob Risco</span>
+              </div>
+              <div className="h-px bg-border-subtle/50 my-1" />
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[14px] text-on-surface-variant">polyline</span>
+                <span className="text-on-surface-variant">Área / Polígono (Tombamento)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full border border-dashed border-institutional-blue flex items-center justify-center shrink-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-institutional-blue" />
+                </div>
+                <span className="text-on-surface-variant">Ponto de Sugestão Cidadã</span>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <button 
+            onClick={() => setShowLegend(true)}
+            className="absolute bottom-4 left-4 z-[1000] w-10 h-10 rounded-full bg-white/95 border border-heritage-green-deep/20 shadow-md flex items-center justify-center hover:bg-surface-container-low text-heritage-green-deep transition-all duration-200 cursor-pointer animate-fade-in"
+            title="Abrir Legenda"
+          >
+            <span className="material-symbols-outlined text-[20px]">info</span>
+          </button>
+        )}
 
         {/* Leaflet MapContainer */}
         <MapContainer 
