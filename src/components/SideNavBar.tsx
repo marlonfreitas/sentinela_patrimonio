@@ -2,7 +2,7 @@ import React from 'react';
 import { useData } from '../context/DataContext';
 
 import logoCaoma from '../assets/logo_caoma_MPE.png';
-import logoSentinela from '../assets/logo_sentinela_Tocantins_fundo.png';
+import logoSentinela from '../assets/logo_sem_fundo.png';
 
 interface SideNavBarProps {
   activeTab: string;
@@ -50,11 +50,11 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({ activeTab, setActiveTab,
           }`}
       >
         {/* Brand Header */}
-        <div className="flex flex-col items-center justify-center px-2 mb-6 border-b border-border-subtle/30 pb-4">
+        <div className="flex flex-col items-center justify-center px-2 mb-4 border-b border-border-subtle/30 pb-3">
           <img
             src={logoSentinela}
             alt="Sentinela do Patrimônio"
-            className="w-full max-w-[220px] h-auto object-contain hover:scale-[1.02] transition-all duration-255"
+            className="w-full max-w-[120px] h-auto object-contain hover:scale-[1.02] transition-all duration-255"
           />
         </div>
 
@@ -136,40 +136,33 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({ activeTab, setActiveTab,
         </nav>
 
         {/* Footer Navigation Links */}
-        <div className="mt-auto border-t border-border-subtle pt-4 space-y-4">
-          <button
-            onClick={() => alert('Suporte técnico: suporte@sentinelapatrimonio.to.gov.br')}
-            className="w-full flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-low hover:text-primary rounded-lg font-label-bold text-label-bold uppercase transition-colors"
-          >
-            <span className="material-symbols-outlined text-[20px]">help_outline</span>
-            <span>Suporte</span>
-          </button>
-
-          <button
-            onClick={() => {
-              if (onLogout) {
-                onLogout();
-              } else {
-                alert('Sessão encerrada.');
-              }
-            }}
-            className="w-full flex items-center gap-3 px-4 py-2 text-status-critical hover:bg-status-critical/10 rounded-lg font-label-bold text-label-bold uppercase transition-colors"
-          >
-            <span className="material-symbols-outlined text-[20px]">logout</span>
-            <span>Sair</span>
-          </button>
-
-          {/* User Info */}
-          <div className="flex items-center gap-3 px-4 pt-2 border-t border-border-subtle/50">
-            <img
-              alt="User Avatar"
-              className="w-9 h-9 rounded-full object-cover border border-border-subtle"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwgHpQEkKoyv_xa6GUupkLHp4L6jbzICsYOfCTOmP6Qs6OB63P1T0ETg89l29PX8R9vF-IBd_wny5Xf_FARG-B77KTS7LXwHLKh5GUs50XNCuiEO4MIjY3WS5VirGJzTuHprojybAE12QKCfTYwzIXPXD8BLbvTTYqIri6wAZIHQwPw63sleM07cDadg-sbuPQwGGJJ5Qh1_fpJvvzlD1Dh6ZLGaQH8rOyg_4g1bbDqjOCMHbMQtrGbA"
-            />
-            <div className="truncate flex-1">
-              <div className="font-bold text-on-surface text-body-sm truncate">Dr. Eduardo Silva</div>
-              <div className="text-on-surface-variant text-[11px] truncate">Administrador</div>
+        <div className="mt-auto border-t border-border-subtle pt-3 space-y-3">
+          {/* User Info & Sair */}
+          <div className="flex items-center justify-between gap-3 px-4 pt-1">
+            <div className="flex items-center gap-3 truncate">
+              <img
+                alt="User Avatar"
+                className="w-9 h-9 rounded-full object-cover border border-border-subtle flex-shrink-0"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwgHpQEkKoyv_xa6GUupkLHp4L6jbzICsYOfCTOmP6Qs6OB63P1T0ETg89l29PX8R9vF-IBd_wny5Xf_FARG-B77KTS7LXwHLKh5GUs50XNCuiEO4MIjY3WS5VirGJzTuHprojybAE12QKCfTYwzIXPXD8BLbvTTYqIri6wAZIHQwPw63sleM07cDadg-sbuPQwGGJJ5Qh1_fpJvvzlD1Dh6ZLGaQH8rOyg_4g1bbDqjOCMHbMQtrGbA"
+              />
+              <div className="truncate">
+                <div className="font-bold text-on-surface text-body-sm truncate">Dr. Eduardo Silva</div>
+                <div className="text-on-surface-variant text-[11px] truncate">Administrador</div>
+              </div>
             </div>
+            <button
+              onClick={() => {
+                if (onLogout) {
+                  onLogout();
+                } else {
+                  alert('Sessão encerrada.');
+                }
+              }}
+              className="p-2 text-status-critical hover:bg-status-critical/10 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+              title="Sair"
+            >
+              <span className="material-symbols-outlined text-[20px]">logout</span>
+            </button>
           </div>
 
           {/* Logo CAOMA MPE no Canto Inferior */}

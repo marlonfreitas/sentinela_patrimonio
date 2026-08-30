@@ -1,6 +1,7 @@
 import React from 'react';
 import { useData } from '../context/DataContext';
-import logoSentinela from '../assets/logo_sentinela_Tocantins_fundo.png';
+import logoSentinela from '../assets/logo_sem_fundo.png';
+
 
 interface TopAppBarProps {
   sidebarOpen: boolean;
