@@ -1,6 +1,334 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap, LayersControl, WMSTileLayer } from 'react-leaflet';
+import L from 'leaflet';
 import { useData } from '../../context/DataContext';
-import type { TriageItem } from '../../types';
+import type { TriageItem, Asset } from '../../types';
+
+// Componentes Auxiliares do Mapa
+const ChangeView: React.FC<{ center: [number, number]; zoom: number }> = ({ center, zoom }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, zoom);
+  }, [center, zoom, map]);
+  return null;
+};
+
+const MapClickHandler: React.FC<{
+  onMapClick: (lat: number, lng: number) => void;
+}> = ({ onMapClick }) => {
+  useMapEvents({
+    click(e) {
+      onMapClick(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+};
+
+// Ícones Customizados
+const createCustomIcon = (status: Asset['status'], category: Asset['category'], source: Asset['source']) => {
+  let color = '#059669'; // stable (Verde)
+  if (status === 'warning') color = '#D97706'; // warning (Laranja)
+  if (status === 'critical') color = '#B91C1C'; // critical (Vermelho)
+
+  let iconSymbol = 'account_balance';
+  if (category === 'natural') iconSymbol = 'eco';
+  if (category === 'arqueologico') iconSymbol = 'landscape';
+
+  const borderStyle = source === 'suggestion' ? 'border-dashed border-institutional-blue' : 'border-white';
+
+  return L.divIcon({
+    html: `
+      <div class="flex items-center justify-center w-8 h-8 rounded-full border-2 ${borderStyle} shadow-lg cursor-pointer transition-transform hover:scale-110" style="background-color: ${color}">
+        <span class="material-symbols-outlined text-[16px] text-white font-bold">${iconSymbol}</span>
+      </div>
+    `,
+    className: 'custom-map-marker',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
+  });
+};
+
+const createConfirmedIcon = () => {
+  return L.divIcon({
+    html: `
+      <div class="flex items-center justify-center w-8 h-8 rounded-full border-2 border-white shadow-lg bg-[#0284c7] text-white cursor-pointer transition-transform scale-110 animate-pulse">
+        <span class="material-symbols-outlined text-[16px] text-white font-bold">add_location_alt</span>
+      </div>
+    `,
+    className: 'confirmed-map-marker',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
+  });
+};
+
+interface ChannelMapProps {
+  activeSubTab: 'denounce' | 'suggest';
+  assets: Asset[];
+  suggestLat: number;
+  suggestLng: number;
+  setSuggestLat: (lat: number) => void;
+  setSuggestLng: (lng: number) => void;
+  setSuggestLocation: (loc: string) => void;
+  denounceLat: number | null;
+  denounceLng: number | null;
+  setDenounceLat: (lat: number | null) => void;
+  setDenounceLng: (lng: number | null) => void;
+  setDenounceLocation: (loc: string) => void;
+  setSelectedAssetId: (id: string) => void;
+}
+
+const ChannelMap: React.FC<ChannelMapProps> = ({
+  activeSubTab,
+  assets,
+  suggestLat,
+  suggestLng,
+  setSuggestLat,
+  setSuggestLng,
+  setSuggestLocation,
+  denounceLat,
+  denounceLng,
+  setDenounceLat,
+  setDenounceLng,
+  setDenounceLocation,
+  setSelectedAssetId,
+}) => {
+  const [mapCenter, setMapCenter] = useState<[number, number]>([-10.249, -48.324]);
+  const [mapZoom, setMapZoom] = useState<number>(7);
+  const [clickedCoords, setClickedCoords] = useState<[number, number] | null>(null);
+  const [geocodedAddress, setGeocodedAddress] = useState<string | null>(null);
+  const [isGeocoding, setIsGeocoding] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const performReverseGeocoding = async (lat: number, lng: number) => {
+    setIsGeocoding(true);
+    setGeocodedAddress(null);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=14`,
+        {
+          headers: {
+            'User-Agent': 'SentinelaPatrimonioTocantins/1.0'
+          }
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const addr = data.address;
+        if (addr) {
+          const city = addr.city || addr.town || addr.village || addr.municipality || '';
+          const road = addr.road || '';
+          
+          let parts = [];
+          if (city) parts.push(city);
+          if (road) parts.push(road);
+          
+          const formatted = parts.join(' - ');
+          setGeocodedAddress(formatted || data.display_name || 'Localização no Tocantins');
+          setIsGeocoding(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Error reverse geocoding:', err);
+    }
+    setGeocodedAddress('Coordenadas capturadas');
+    setIsGeocoding(false);
+  };
+
+  const handleMapClick = (lat: number, lng: number) => {
+    const latFixed = parseFloat(lat.toFixed(6));
+    const lngFixed = parseFloat(lng.toFixed(6));
+    setClickedCoords([latFixed, lngFixed]);
+    performReverseGeocoding(latFixed, lngFixed);
+  };
+
+  return (
+    <div className="bg-white rounded-xl p-4 border border-border-subtle flex flex-col h-[580px] shadow-sm">
+      <div className="mb-3">
+        <h4 className="font-label-caps text-xs text-heritage-green-deep font-bold uppercase tracking-wider flex items-center gap-1.5">
+          <span className="material-symbols-outlined text-[18px]">map</span>
+          Mapa Interativo do Tocantins
+        </h4>
+        <p className="text-[11px] text-on-surface-variant leading-relaxed mt-1">
+          {activeSubTab === 'suggest'
+            ? 'Navegue pelo estado, localize o município e clique no local exato onde se encontra o bem para capturar as coordenadas e sugerir.'
+            : 'Clique em um patrimônio existente no mapa para selecioná-lo no formulário, ou clique em um local vazio para definir coordenadas de GPS personalizadas.'}
+        </p>
+      </div>
+
+      {successMessage && (
+        <div className="bg-[#ecfdf5] border border-[#10b981] text-[#065f46] rounded-lg px-3 py-2 text-xs flex items-center gap-1.5 mb-3 animate-fade-in">
+          <span className="material-symbols-outlined text-[16px]">check_circle</span>
+          {successMessage}
+        </div>
+      )}
+
+      <div className="flex-1 w-full rounded-lg overflow-hidden border border-border-subtle shadow-inner min-h-[300px] relative z-0">
+        <MapContainer
+          center={mapCenter}
+          zoom={mapZoom}
+          scrollWheelZoom={true}
+          style={{ width: '100%', height: '100%' }}
+        >
+          <ChangeView center={mapCenter} zoom={mapZoom} />
+          
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer name="Mapa de Ruas (OSM)">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer checked name="Satélite (ESRI)">
+              <TileLayer
+                attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              />
+            </LayersControl.BaseLayer>
+
+            <LayersControl.Overlay checked name="Limites Municipais (SEPLAN/TO)">
+              <WMSTileLayer
+                url="https://geoportal.to.gov.br/geoserver/base_tematica_tocantins/wms"
+                layers="LimiteMunicipal_AGM_TO_2022_L"
+                format="image/png"
+                transparent={true}
+                version="1.1.1"
+                attribution="&copy; SEPLAN/TO"
+              />
+            </LayersControl.Overlay>
+
+            <LayersControl.Overlay name="Limite Estadual (SEPLAN/TO)">
+              <WMSTileLayer
+                url="https://geoportal.to.gov.br/geoserver/base_tematica_tocantins/wms"
+                layers="LimiteEstadual_AGM_TO_2022_A"
+                format="image/png"
+                transparent={true}
+                version="1.1.1"
+                attribution="&copy; SEPLAN/TO"
+              />
+            </LayersControl.Overlay>
+          </LayersControl>
+
+          <MapClickHandler onMapClick={handleMapClick} />
+
+          {clickedCoords && (
+            <Popup position={clickedCoords} onClose={() => setClickedCoords(null)}>
+              <div className="p-1 space-y-2 text-on-surface text-body-sm max-w-[220px]">
+                <div>
+                  <span className="font-mono text-[9px] text-on-surface-variant font-bold block uppercase tracking-wider">Local Selecionado</span>
+                  <span className="font-mono text-xs block mt-1">Lat: <strong>{clickedCoords[0]}</strong></span>
+                  <span className="font-mono text-xs block">Lng: <strong>{clickedCoords[1]}</strong></span>
+                </div>
+                <div className="border-t border-border-subtle/50 pt-1.5">
+                  <span className="text-[10px] font-bold block text-on-surface">Localidade Estimada:</span>
+                  {isGeocoding ? (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="material-symbols-outlined text-[12px] animate-spin text-primary">sync</span>
+                      <span className="text-[10px] text-on-surface-variant italic">Buscando município...</span>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-on-surface-variant block leading-tight mt-0.5">{geocodedAddress}</span>
+                  )}
+                </div>
+                <div className="flex gap-2 pt-1 border-t border-border-subtle/50">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (activeSubTab === 'suggest') {
+                        setSuggestLat(clickedCoords[0]);
+                        setSuggestLng(clickedCoords[1]);
+                        if (geocodedAddress && geocodedAddress !== 'Coordenadas capturadas') {
+                          setSuggestLocation(geocodedAddress);
+                        }
+                        setSuccessMessage("Localização da sugestão vinculada com sucesso!");
+                      } else {
+                        setDenounceLat(clickedCoords[0]);
+                        setDenounceLng(clickedCoords[1]);
+                        if (geocodedAddress && geocodedAddress !== 'Coordenadas capturadas') {
+                          setDenounceLocation(geocodedAddress);
+                        }
+                        setSuccessMessage("Coordenadas GPS da denúncia vinculadas com sucesso!");
+                      }
+                      setClickedCoords(null);
+                      setTimeout(() => setSuccessMessage(null), 4000);
+                    }}
+                    className="flex-grow py-1 bg-heritage-green-deep hover:bg-primary text-white text-[10px] font-label-bold rounded transition-colors uppercase text-center cursor-pointer border-none font-bold"
+                  >
+                    Confirmar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setClickedCoords(null)}
+                    className="flex-grow py-1 bg-white hover:bg-surface-gray border border-border-subtle text-on-surface-variant text-[10px] font-label-bold rounded transition-colors uppercase text-center cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </Popup>
+          )}
+
+          {activeSubTab === 'suggest' && suggestLat !== -10.249 && suggestLng !== -48.324 && (
+            <Marker position={[suggestLat, suggestLng]} icon={createConfirmedIcon()}>
+              <Popup>
+                <div className="p-1 text-center font-body-sm">
+                  <strong className="text-primary text-xs">Ponto Sugerido</strong>
+                  <p className="text-[10px] text-on-surface-variant m-0 mt-1">Lat: {suggestLat}, Lng: {suggestLng}</p>
+                </div>
+              </Popup>
+            </Marker>
+          )}
+
+          {activeSubTab === 'denounce' && denounceLat !== null && denounceLng !== null && (
+            <Marker position={[denounceLat, denounceLng]} icon={createConfirmedIcon()}>
+              <Popup>
+                <div className="p-1 text-center font-body-sm">
+                  <strong className="text-primary text-xs">Coordenada do Dano</strong>
+                  <p className="text-[10px] text-on-surface-variant m-0 mt-1">Lat: {denounceLat}, Lng: {denounceLng}</p>
+                </div>
+              </Popup>
+            </Marker>
+          )}
+
+          {activeSubTab === 'denounce' && assets.map((asset) => {
+            if (asset.coordinates && asset.coordinates[0] !== 0) {
+              return (
+                <Marker
+                  key={asset.id}
+                  position={asset.coordinates}
+                  icon={createCustomIcon(asset.status, asset.category, asset.source)}
+                >
+                  <Popup>
+                    <div className="p-1 space-y-1.5 text-on-surface font-body-sm max-w-[200px]">
+                      <span className="font-mono text-[9px] text-on-surface-variant uppercase font-bold tracking-wider">Bem Cadastrado</span>
+                      <h5 className="font-bold text-heritage-green-deep text-xs leading-tight m-0">{asset.name}</h5>
+                      <p className="text-[10px] text-on-surface-variant m-0">{asset.location}</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedAssetId(asset.id);
+                          setDenounceLocation(asset.location);
+                          setSuccessMessage(`Bem "${asset.name}" selecionado no formulário.`);
+                          setTimeout(() => setSuccessMessage(null), 3500);
+                        }}
+                        className="w-full mt-1.5 py-1 bg-heritage-green-deep hover:bg-primary text-white text-[10px] font-label-bold rounded transition-colors uppercase text-center cursor-pointer border-none font-bold"
+                      >
+                        Selecionar no Formulário
+                      </button>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            }
+            return null;
+          })}
+        </MapContainer>
+      </div>
+    </div>
+  );
+};
 
 export const CitizenChannel: React.FC = () => {
   const { assets, triageItems, occurrences, addCitizenTriage } = useData();
@@ -273,7 +601,9 @@ export const CitizenChannel: React.FC = () => {
           <>
             {/* 1. ABA DENUNCIAR DANO */}
             {activeSubTab === 'denounce' && (
-              <form onSubmit={handleDenounceSubmit} className="max-w-xl mx-auto space-y-5">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="lg:col-span-6">
+                  <form onSubmit={handleDenounceSubmit} className="space-y-5">
                 <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface border-b border-border-subtle pb-2">
                   Registrar Ocorrência em Bem Existente
                 </h3>
@@ -555,11 +885,32 @@ export const CitizenChannel: React.FC = () => {
                   Registrar Denúncia de Dano
                 </button>
               </form>
-            )}
+            </div>
+            <div className="lg:col-span-6 lg:sticky lg:top-4">
+              <ChannelMap
+                activeSubTab={activeSubTab}
+                assets={assets}
+                suggestLat={suggestLat}
+                suggestLng={suggestLng}
+                setSuggestLat={setSuggestLat}
+                setSuggestLng={setSuggestLng}
+                setSuggestLocation={setSuggestLocation}
+                denounceLat={denounceLat}
+                denounceLng={denounceLng}
+                setDenounceLat={setDenounceLat}
+                setDenounceLng={setDenounceLng}
+                setDenounceLocation={setDenounceLocation}
+                setSelectedAssetId={setSelectedAssetId}
+              />
+            </div>
+          </div>
+        )}
 
             {/* 2. ABA SUGERIR PATRIMÔNIO */}
             {activeSubTab === 'suggest' && (
-              <form onSubmit={handleSuggestSubmit} className="max-w-xl mx-auto space-y-5">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="lg:col-span-6">
+                  <form onSubmit={handleSuggestSubmit} className="space-y-5">
                 <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface border-b border-border-subtle pb-2">
                   Sugerir Bem para Catalogação
                 </h3>
@@ -795,7 +1146,26 @@ export const CitizenChannel: React.FC = () => {
                   Enviar Sugestão de Patrimônio
                 </button>
               </form>
-            )}
+            </div>
+            <div className="lg:col-span-6 lg:sticky lg:top-4">
+              <ChannelMap
+                activeSubTab={activeSubTab}
+                assets={assets}
+                suggestLat={suggestLat}
+                suggestLng={suggestLng}
+                setSuggestLat={setSuggestLat}
+                setSuggestLng={setSuggestLng}
+                setSuggestLocation={setSuggestLocation}
+                denounceLat={denounceLat}
+                denounceLng={denounceLng}
+                setDenounceLat={setDenounceLat}
+                setDenounceLng={setDenounceLng}
+                setDenounceLocation={setDenounceLocation}
+                setSelectedAssetId={setSelectedAssetId}
+              />
+            </div>
+          </div>
+        )}
 
             {/* 3. ABA ACOMPANHAR PROTOCOLO */}
             {activeSubTab === 'track' && (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap, LayersControl, WMSTileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import { useData } from '../../context/DataContext';
 import type { Asset } from '../../types';
@@ -292,11 +292,42 @@ export const Map: React.FC = () => {
           {/* Mover câmera automaticamente */}
           <ChangeView center={mapCenter} zoom={mapZoom} />
 
-          {/* Camada base do OpenStreetMap */}
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer name="Mapa de Ruas (OSM)">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer checked name="Satélite (ESRI)">
+              <TileLayer
+                attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              />
+            </LayersControl.BaseLayer>
+
+            <LayersControl.Overlay checked name="Limites Municipais (SEPLAN/TO)">
+              <WMSTileLayer
+                url="https://geoportal.to.gov.br/geoserver/base_tematica_tocantins/wms"
+                layers="LimiteMunicipal_AGM_TO_2022_L"
+                format="image/png"
+                transparent={true}
+                version="1.1.1"
+                attribution="&copy; SEPLAN/TO"
+              />
+            </LayersControl.Overlay>
+
+            <LayersControl.Overlay name="Limite Estadual (SEPLAN/TO)">
+              <WMSTileLayer
+                url="https://geoportal.to.gov.br/geoserver/base_tematica_tocantins/wms"
+                layers="LimiteEstadual_AGM_TO_2022_A"
+                format="image/png"
+                transparent={true}
+                version="1.1.1"
+                attribution="&copy; SEPLAN/TO"
+              />
+            </LayersControl.Overlay>
+          </LayersControl>
 
           {/* Renderização Inteligente de Geometrias: Pontos e Polígonos (Sec 6.3 / 18) */}
           {mapAssets.map((asset) => {
