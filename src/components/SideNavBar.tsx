@@ -166,12 +166,15 @@ export const SideNavBar: React.FC<SideNavBarProps> = ({ activeTab, setActiveTab,
           </div>
 
           {/* Logo CAOMA MPE no Canto Inferior */}
-          <div className="flex justify-center items-center pt-3 border-t border-border-subtle/30 mt-2">
+          <div className="flex flex-col justify-center items-center pt-3 border-t border-border-subtle/30 mt-2 gap-1 text-center">
             <img
               src={logoCaoma}
               alt="Logo CAOMA MPE"
-              className="h-10 w-auto object-contain opacity-75 hover:opacity-100 transition-opacity duration-200"
+              className="h-9 w-auto object-contain opacity-85 hover:opacity-100 transition-opacity duration-200"
             />
+            <span className="text-[9px] text-on-surface-variant/75 font-medium tracking-tight mt-0.5">
+              Desenvolvido por Marlon Rodrigues NIMA/CAOMA
+            </span>
           </div>
         </div>
       </aside>

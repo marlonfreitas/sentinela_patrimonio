@@ -97,6 +97,9 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
         {/* Footer do Card */}
         <div className="text-center pt-2 border-t border-border-subtle/50 text-[10px] text-on-surface-variant leading-relaxed">
           <p className="font-semibold text-primary mt-1">Ministério Público do Estado do Tocantins</p>
+          <p className="text-[9.5px] text-on-surface-variant/80 mt-0.5 font-medium">
+            Desenvolvido por Marlon Rodrigues NIMA/CAOMA
+          </p>
         </div>
       </div>
 
