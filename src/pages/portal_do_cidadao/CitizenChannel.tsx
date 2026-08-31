@@ -94,8 +94,8 @@ const ChannelMap: React.FC<ChannelMapProps> = ({
   setDenounceLocation,
   setSelectedAssetId,
 }) => {
-  const [mapCenter, setMapCenter] = useState<[number, number]>([-10.249, -48.324]);
-  const [mapZoom, setMapZoom] = useState<number>(7);
+  const mapCenter: [number, number] = [-10.249, -48.324];
+  const mapZoom = 7;
   const [clickedCoords, setClickedCoords] = useState<[number, number] | null>(null);
   const [geocodedAddress, setGeocodedAddress] = useState<string | null>(null);
   const [isGeocoding, setIsGeocoding] = useState<boolean>(false);
@@ -214,7 +214,7 @@ const ChannelMap: React.FC<ChannelMapProps> = ({
           <MapClickHandler onMapClick={handleMapClick} />
 
           {clickedCoords && (
-            <Popup position={clickedCoords} onClose={() => setClickedCoords(null)}>
+            <Popup position={clickedCoords} eventHandlers={{ remove: () => setClickedCoords(null) }}>
               <div className="p-1 space-y-2 text-on-surface text-body-sm max-w-[220px]">
                 <div>
                   <span className="font-mono text-[9px] text-on-surface-variant font-bold block uppercase tracking-wider">Local Selecionado</span>
